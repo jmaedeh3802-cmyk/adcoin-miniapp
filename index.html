@@ -1,0 +1,143 @@
+<!DOCTYPE html><html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AdCoin</title><script src="https://telegram.org/js/telegram-web-app.js"></script><style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #101116;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+.container {
+  max-width: 450px;
+  margin: auto;
+  padding: 22px;
+}
+
+.logo {
+  font-size: 32px;
+  font-weight: bold;
+  color: #ffc928;
+  margin: 20px;
+}
+
+.card {
+  background: #1b1d25;
+  border: 1px solid #373944;
+  border-radius: 18px;
+  padding: 25px;
+  margin: 20px 0;
+}
+
+.balance {
+  font-size: 36px;
+  color: #ffd34e;
+  font-weight: bold;
+  margin: 20px;
+}
+
+.label {
+  color: #aaa;
+  font-size: 14px;
+}
+
+button {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 12px;
+  cursor: pointer;
+}
+
+.adbtn {
+  background: #ffc928;
+  color: #171717;
+}
+
+.invite {
+  background: #292c37;
+  color: white;
+  border: 1px solid #ffc928;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-around;
+  background: #1b1d25;
+  padding: 18px 5px;
+  border-radius: 15px;
+  margin-top: 25px;
+  color: #ffc928;
+  font-size: 13px;
+}
+
+.info {
+  color: #aaa;
+  font-size: 13px;
+  line-height: 2;
+}
+</style></head><body><div class="container"><div class="logo">🪙 AdCoin</div><p>Welcome to AdCoin!</p><div class="card"><div class="label">Your Total Balance</div><div class="balance">
+<span id="balance">0</span>
+</div><div class="label">AC COINS</div></div><div class="card"><h3>📺 Watch Ads</h3><p class="info">
+Watch advertisements and earn rewards!
+</p><button class="adbtn" onclick="watchAd()">
+▶ Watch Advertisement
+</button><p class="info" id="message">
+Start earning today!
+</p></div><div class="card"><h3>👥 Invite Friends</h3><p class="info">
+Invite your friends and earn more rewards.
+</p><button class="invite" onclick="inviteFriends()">
+🔗 Invite Friends
+</button></div><div class="nav">
+<span>🏠 Home</span>
+<span>📺 Ads</span>
+<span>👥 Friends</span>
+<span>👤 Profile</span>
+</div><p class="info">AdCoin © 2026</p></div><script>
+
+let tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+let balance = 0;
+
+function watchAd() {
+
+document.getElementById("message").innerText =
+"This is a demo version. Advertising system is not connected yet.";
+
+}
+
+function inviteFriends() {
+
+let link = "https://t.me/AdCoin_Reward_Bot";
+
+if (navigator.share) {
+
+navigator.share({
+title: "AdCoin",
+text: "Join AdCoin and earn rewards!",
+url: link
+});
+
+} else {
+
+navigator.clipboard.writeText(link);
+alert("Invitation link copied!");
+
+}
+
+}
+
+</script></body>
+</html>
