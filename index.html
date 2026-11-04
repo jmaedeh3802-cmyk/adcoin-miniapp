@@ -62,7 +62,7 @@
             <h2 style="color: #ffd700; text-align: center; margin-bottom: 15px;">Watch Ads</h2>
             <div class="card">
                 <p style="margin-bottom: 10px;">Watch video and earn 10 Coins</p>
-                <button class="btn" onclick="alert('Ad system coming soon!')">Watch Now</button>
+                <button class="btn" onclick="earnCoins()">Watch Now</button>
             </div>
         </div>
 
@@ -122,6 +122,24 @@
             document.getElementById('profile-username').innerText = userData.username;
             document.getElementById('profile-id').innerText = userData.id;
         }
+
+        // --- سیستم ذخیره و نمایش موجودی ---
+        let currentBalance = localStorage.getItem('adcoin_balance');
+        if (currentBalance === null) {
+            currentBalance = 0;
+        } else {
+            currentBalance = parseInt(currentBalance);
+        }
+        document.getElementById('user-balance').innerText = currentBalance;
+
+        // تابعی که با کلیک روی دکمه تبلیغات اجرا می‌شود
+        function earnCoins() {
+            currentBalance += 10; // ۱۰ سکه اضافه می‌کند
+            localStorage.setItem('adcoin_balance', currentBalance); // ذخیره در حافظه
+            document.getElementById('user-balance').innerText = currentBalance; // آپدیت صفحه
+            tg.showAlert("You earned 10 Coins! 🪙");
+        }
+        // ------------------------------------
 
         function switchTab(tabId, element) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
