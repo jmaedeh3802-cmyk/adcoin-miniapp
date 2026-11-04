@@ -8,27 +8,30 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
         body { background-color: #0a0a0a; color: #ffffff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
         .header { text-align: center; padding: 15px; background: #111; border-bottom: 1px solid #333; }
         .header h1 { color: #ffd700; font-size: 22px; font-weight: bold; }
         .header p { color: #888; font-size: 12px; margin-top: 5px; }
-
         .content { flex: 1; padding: 15px; overflow-y: auto; padding-bottom: 80px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-
         .card { background: #151515; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 15px; text-align: center; }
         .balance-card { border: 1px solid #ffd700; }
         .balance-title { color: #888; font-size: 14px; margin-bottom: 10px; }
         .balance-amount { color: #ffd700; font-size: 36px; font-weight: bold; }
-        
         .btn { background: #ffd700; color: #000; border: none; border-radius: 8px; padding: 12px; font-size: 15px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 15px; }
         .btn:active { opacity: 0.8; }
-        
         .user-info { display: flex; align-items: center; gap: 15px; text-align: left; }
         .avatar { width: 50px; height: 50px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; color: #ffd700; border: 2px solid #ffd700; }
         .user-details h3 { font-size: 16px; color: #fff; margin-bottom: 4px; }
         .user-details p { font-size: 12px; color: #888; }
+        
+        /* History List Styles */
+        .history-list { list-style: none; text-align: left; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #222; font-size: 14px; }
+        .history-item:last-child { border-bottom: none; }
+        .history-title { color: #ccc; }
+        .history-date { color: #666; font-size: 11px; display: block; margin-top: 3px; }
+        .history-amount { color: #4caf50; font-weight: bold; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #111; border-top: 1px solid #333; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #666; font-size: 12px; cursor: pointer; padding: 5px 0; width: 25%; }
@@ -56,13 +59,21 @@
                 <div class="balance-title">Your Balance</div>
                 <div class="balance-amount">🪙 <span id="user-balance">0</span></div>
             </div>
+            
+            <!-- Recent Activity Section -->
+            <div class="card" style="text-align: left;">
+                <h3 style="color: #ffd700; margin-bottom: 10px; font-size: 16px;">Recent Activity</h3>
+                <ul id="history-list" class="history-list">
+                    <li style="color: #666; font-size: 14px; text-align: center; padding: 10px;">No activity yet.</li>
+                </ul>
+            </div>
         </div>
 
         <div id="tab-ads" class="tab-content">
             <h2 style="color: #ffd700; text-align: center; margin-bottom: 15px;">Watch Ads</h2>
             <div class="card">
                 <p style="margin-bottom: 10px;">Watch video and earn 10 Coins</p>
-                <button class="btn" onclick="earnCoins()">Watch Now</button>
+                <button class="btn" id="watchBtn">Watch Now</button>
             </div>
         </div>
 
@@ -70,7 +81,7 @@
             <h2 style="color: #ffd700; text-align: center; margin-bottom: 15px;">Invite Friends</h2>
             <div class="card">
                 <p style="margin-bottom: 15px; color: #888; font-size: 14px;">Invite friends and get 100 Coins!</p>
-                <button class="btn" onclick="shareLink()">Copy Invite Link</button>
+                <button class="btn" id="shareBtn">Copy Invite Link</button>
             </div>
         </div>
 
@@ -105,11 +116,12 @@
     </div>
 
     <script>
+        // 1. Initialize Telegram Web App
         let tg = window.Telegram.WebApp;
         tg.expand(); 
 
+        // 2. Get User Data
         let userData = { id: '123', name: 'User', username: 'No Username' };
-
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             const user = tg.initDataUnsafe.user;
             userData.id = user.id;
@@ -123,32 +135,54 @@
             document.getElementById('profile-id').innerText = userData.id;
         }
 
-        // --- سیستم ذخیره و نمایش موجودی ---
-        let currentBalance = localStorage.getItem('adcoin_balance');
-        if (currentBalance === null) {
-            currentBalance = 0;
-        } else {
-            currentBalance = parseInt(currentBalance);
-        }
-        document.getElementById('user-balance').innerText = currentBalance;
+        // 3. Balance System
+        let balance = parseInt(localStorage.getItem('adcoin_balance')) || 0;
+        document.getElementById('user-balance').innerText = balance;
 
-        // تابعی که با کلیک روی دکمه تبلیغات اجرا می‌شود
-        function earnCoins() {
-            currentBalance += 10; // ۱۰ سکه اضافه می‌کند
-            localStorage.setItem('adcoin_balance', currentBalance); // ذخیره در حافظه
-            document.getElementById('user-balance').innerText = currentBalance; // آپدیت صفحه
+        // 4. History System
+        let history = JSON.parse(localStorage.getItem('adcoin_history')) || [];
+        
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            if (history.length === 0) {
+                list.innerHTML = '<li style="color: #666; font-size: 14px; text-align: center; padding: 10px;">No activity yet.</li>';
+                return;
+            }
+            list.innerHTML = '';
+            // Show latest 5 items
+            history.slice(0, 5).forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.innerHTML = `
+                    <div>
+                        <div class="history-title">${item.title}</div>
+                        <div class="history-date">${item.date}</div>
+                    </div>
+                    <div class="history-amount">+${item.amount} 🪙</div>
+                `;
+                list.appendChild(li);
+            });
+        }
+        renderHistory(); // Render on load
+
+        // 5. Watch Ad Button Event
+        document.getElementById('watchBtn').addEventListener('click', function() {
+            balance += 10;
+            localStorage.setItem('adcoin_balance', balance);
+            document.getElementById('user-balance').innerText = balance;
+            
+            // Add to history
+            const now = new Date();
+            const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            history.unshift({ title: 'Watched Ad', amount: 10, date: dateStr });
+            localStorage.setItem('adcoin_history', JSON.stringify(history));
+            renderHistory();
+
             tg.showAlert("You earned 10 Coins! 🪙");
-        }
-        // ------------------------------------
+        });
 
-        function switchTab(tabId, element) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            element.classList.add('active');
-        }
-
-        function shareLink() {
+        // 6. Share Link Button Event
+        document.getElementById('shareBtn').addEventListener('click', function() {
             const link = "https://t.me/AdCoin_Reward_Bot?start=" + userData.id;
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(link).then(() => {
@@ -157,7 +191,15 @@
             } else {
                 tg.showAlert("Link: " + link);
             }
-        }
+        });
+
+        // 7. Tab Switching Logic
+        window.switchTab = function(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+        };
     </script>
 </body>
 </html>
