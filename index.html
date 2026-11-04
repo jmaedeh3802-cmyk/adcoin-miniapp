@@ -1,205 +1,631 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AdCoin</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        body { background-color: #0a0a0a; color: #ffffff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .header { text-align: center; padding: 15px; background: #111; border-bottom: 1px solid #333; }
-        .header h1 { color: #ffd700; font-size: 22px; font-weight: bold; }
-        .header p { color: #888; font-size: 12px; margin-top: 5px; }
-        .content { flex: 1; padding: 15px; overflow-y: auto; padding-bottom: 80px; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .card { background: #151515; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 15px; text-align: center; }
-        .balance-card { border: 1px solid #ffd700; }
-        .balance-title { color: #888; font-size: 14px; margin-bottom: 10px; }
-        .balance-amount { color: #ffd700; font-size: 36px; font-weight: bold; }
-        .btn { background: #ffd700; color: #000; border: none; border-radius: 8px; padding: 12px; font-size: 15px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 15px; }
-        .btn:active { opacity: 0.8; }
-        .user-info { display: flex; align-items: center; gap: 15px; text-align: left; }
-        .avatar { width: 50px; height: 50px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; color: #ffd700; border: 2px solid #ffd700; }
-        .user-details h3 { font-size: 16px; color: #fff; margin-bottom: 4px; }
-        .user-details p { font-size: 12px; color: #888; }
-        
-        /* History List Styles */
-        .history-list { list-style: none; text-align: left; }
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #222; font-size: 14px; }
-        .history-item:last-child { border-bottom: none; }
-        .history-title { color: #ccc; }
-        .history-date { color: #666; font-size: 11px; display: block; margin-top: 3px; }
-        .history-amount { color: #4caf50; font-weight: bold; }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #111; border-top: 1px solid #333; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #666; font-size: 12px; cursor: pointer; padding: 5px 0; width: 25%; }
-        .nav-item.active { color: #ffd700; }
-        .nav-item svg { width: 22px; height: 22px; margin-bottom: 4px; fill: currentColor; }
-    </style>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+<title>AdCoin</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #0a0a0a;
+    color: white;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.header {
+    text-align: center;
+    padding: 18px;
+    background: #111;
+    border-bottom: 1px solid #333;
+}
+
+.header h1 {
+    color: #ffd700;
+    font-size: 24px;
+}
+
+.header p {
+    color: #888;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.content {
+    height: calc(100vh - 145px);
+    overflow-y: auto;
+    padding: 15px;
+    padding-bottom: 25px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.card {
+    background: #151515;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.balance-card {
+    border: 1px solid #ffd700;
+}
+
+.balance-title {
+    color: #888;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.balance-amount {
+    color: #ffd700;
+    font-size: 36px;
+    font-weight: bold;
+}
+
+.earnings-card {
+    border: 1px solid #4caf50;
+}
+
+.earnings-amount {
+    color: #4caf50;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    text-align: left;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #333;
+    color: #ffd700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    border: 2px solid #ffd700;
+}
+
+.user-details h3 {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.user-details p {
+    color: #888;
+    font-size: 12px;
+}
+
+.btn {
+    width: 100%;
+    background: #ffd700;
+    color: black;
+    border: none;
+    border-radius: 8px;
+    padding: 13px;
+    margin-top: 15px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn:active {
+    opacity: 0.7;
+}
+
+.section-title {
+    color: #ffd700;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.history-list {
+    list-style: none;
+    text-align: left;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #292929;
+}
+
+.history-title {
+    color: #ccc;
+    font-size: 14px;
+}
+
+.history-date {
+    color: #777;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+.history-amount {
+    color: #4caf50;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.empty-history {
+    color: #777;
+    text-align: center;
+    font-size: 13px;
+    padding: 15px;
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #111;
+    border-top: 1px solid #333;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    z-index: 100;
+}
+
+.nav-item {
+    width: 25%;
+    text-align: center;
+    color: #777;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.nav-item.active {
+    color: #ffd700;
+}
+
+.nav-icon {
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.invite-text {
+    color: #888;
+    font-size: 14px;
+    line-height: 1.6;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="header">
-        <h1>AdCoin</h1>
-        <p>Watch Ads. Earn Rewards.</p>
+<div class="header">
+    <h1>AdCoin 🪙</h1>
+    <p>Watch Ads. Earn Rewards.</p>
+</div>
+
+<div class="content">
+
+    <!-- HOME -->
+
+    <div id="tab-home" class="tab-content active">
+
+        <div class="card user-info">
+            <div class="avatar" id="user-avatar">?</div>
+
+            <div class="user-details">
+                <h3 id="user-name">Loading...</h3>
+                <p id="user-id">ID: ...</p>
+            </div>
+        </div>
+
+        <div class="card balance-card">
+            <div class="balance-title">Your Balance</div>
+
+            <div class="balance-amount">
+                🪙 <span id="user-balance">0</span>
+            </div>
+        </div>
+
+        <div class="card earnings-card">
+
+            <div class="balance-title">
+                Total Earnings
+            </div>
+
+            <div class="earnings-amount">
+                $<span id="total-earnings">0.00</span>
+            </div>
+
+            <p style="color:#888;font-size:12px;margin-top:8px;">
+                Your total earnings so far
+            </p>
+
+        </div>
+
+        <div class="card" style="text-align:left;">
+
+            <h3 class="section-title">
+                Recent Activity
+            </h3>
+
+            <ul id="history-list" class="history-list">
+                <li class="empty-history">
+                    No activity yet.
+                </li>
+            </ul>
+
+        </div>
+
     </div>
 
-    <div class="content">
-        <div id="tab-home" class="tab-content active">
-            <div class="card user-info">
-                <div class="avatar" id="user-avatar">?</div>
-                <div class="user-details">
-                    <h3 id="user-name">Loading...</h3>
-                    <p id="user-id">ID: ...</p>
-                </div>
-            </div>
-            <div class="card balance-card">
-                <div class="balance-title">Your Balance</div>
-                <div class="balance-amount">🪙 <span id="user-balance">0</span></div>
-            </div>
-            
-            <!-- Recent Activity Section -->
-            <div class="card" style="text-align: left;">
-                <h3 style="color: #ffd700; margin-bottom: 10px; font-size: 16px;">Recent Activity</h3>
-                <ul id="history-list" class="history-list">
-                    <li style="color: #666; font-size: 14px; text-align: center; padding: 10px;">No activity yet.</li>
-                </ul>
-            </div>
+    <!-- ADS -->
+
+    <div id="tab-ads" class="tab-content">
+
+        <h2 class="section-title">Watch Ads</h2>
+
+        <div class="card">
+
+            <p style="margin-bottom:10px;">
+                Watch video and earn 10 Coins
+            </p>
+
+            <button class="btn" id="watchBtn">
+                Watch Now
+            </button>
+
+            <p style="color:#4caf50;font-size:14px;margin-top:12px;font-weight:bold;">
+                Earn $0.05 for watching each ad.
+            </p>
+
         </div>
 
-        <div id="tab-ads" class="tab-content">
-            <h2 style="color: #ffd700; text-align: center; margin-bottom: 15px;">Watch Ads</h2>
-            <div class="card">
-                <p style="margin-bottom: 10px;">Watch video and earn 10 Coins</p>
-                <button class="btn" id="watchBtn">Watch Now</button>
-            </div>
-        </div>
-
-        <div id="tab-friends" class="tab-content">
-            <h2 style="color: #ffd700; text-align: center; margin-bottom: 15px;">Invite Friends</h2>
-            <div class="card">
-                <p style="margin-bottom: 15px; color: #888; font-size: 14px;">Invite friends and get 100 Coins!</p>
-                <button class="btn" id="shareBtn">Copy Invite Link</button>
-            </div>
-        </div>
-
-        <div id="tab-profile" class="tab-content">
-            <h2 style="color: #ffd700; text-align: center; margin-bottom: 15px;">Profile</h2>
-            <div class="card">
-                <p style="color: #888; margin-bottom: 5px;">Username:</p>
-                <p id="profile-username" style="margin-bottom: 15px;">@...</p>
-                <p style="color: #888; margin-bottom: 5px;">User ID:</p>
-                <p id="profile-id">...</p>
-            </div>
-        </div>
     </div>
 
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('home', this)">
-            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-            Home
+    <!-- FRIENDS -->
+
+    <div id="tab-friends" class="tab-content">
+
+        <h2 class="section-title">Invite Friends</h2>
+
+        <div class="card">
+
+            <p class="invite-text">
+                Invite your friends to AdCoin
+                and earn 100 Coins for every
+                successful referral!
+            </p>
+
+            <button class="btn" id="shareBtn">
+                Copy Invite Link
+            </button>
+
         </div>
-        <div class="nav-item" onclick="switchTab('ads', this)">
-            <svg viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
-            Ads
-        </div>
-        <div class="nav-item" onclick="switchTab('friends', this)">
-            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-            Friends
-        </div>
-        <div class="nav-item" onclick="switchTab('profile', this)">
-            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-            Profile
-        </div>
+
     </div>
 
-    <script>
-        // 1. Initialize Telegram Web App
-        let tg = window.Telegram.WebApp;
-        tg.expand(); 
+    <!-- PROFILE -->
 
-        // 2. Get User Data
-        let userData = { id: '123', name: 'User', username: 'No Username' };
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            const user = tg.initDataUnsafe.user;
-            userData.id = user.id;
-            userData.name = user.first_name;
-            userData.username = user.username ? '@' + user.username : 'No Username';
-            
-            document.getElementById('user-name').innerText = userData.name;
-            document.getElementById('user-id').innerText = 'ID: ' + userData.id;
-            document.getElementById('user-avatar').innerText = userData.name.charAt(0).toUpperCase();
-            document.getElementById('profile-username').innerText = userData.username;
-            document.getElementById('profile-id').innerText = userData.id;
+    <div id="tab-profile" class="tab-content">
+
+        <h2 class="section-title">My Profile</h2>
+
+        <div class="card">
+
+            <p style="color:#888;margin-bottom:8px;">
+                Username
+            </p>
+
+            <p id="profile-username">...</p>
+
+            <br>
+
+            <p style="color:#888;margin-bottom:8px;">
+                User ID
+            </p>
+
+            <p id="profile-id">...</p>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- NAVIGATION -->
+
+<div class="bottom-nav">
+
+    <div class="nav-item active" onclick="switchTab('home',this)">
+        <div class="nav-icon">🏠</div>
+        Home
+    </div>
+
+    <div class="nav-item" onclick="switchTab('ads',this)">
+        <div class="nav-icon">📺</div>
+        Ads
+    </div>
+
+    <div class="nav-item" onclick="switchTab('friends',this)">
+        <div class="nav-icon">👥</div>
+        Friends
+    </div>
+
+    <div class="nav-item" onclick="switchTab('profile',this)">
+        <div class="nav-icon">👤</div>
+        Profile
+    </div>
+
+</div>
+
+<script>
+
+// TELEGRAM INITIALIZATION
+
+const tg = window.Telegram?.WebApp;
+
+if (tg) {
+    tg.ready();
+    tg.expand();
+}
+
+function showMessage(message) {
+    if (tg && typeof tg.showAlert === "function") {
+        tg.showAlert(message);
+    } else {
+        alert(message);
+    }
+}
+
+// USER INFORMATION
+
+const telegramUser = tg?.initDataUnsafe?.user;
+
+const userData = {
+    id: telegramUser?.id || "123",
+    name: telegramUser?.first_name || "Guest",
+    username: telegramUser?.username
+        ? "@" + telegramUser.username
+        : "No Username"
+};
+
+document.getElementById("user-name").textContent = userData.name;
+document.getElementById("user-id").textContent = "ID: " + userData.id;
+
+document.getElementById("user-avatar").textContent =
+    userData.name.charAt(0).toUpperCase();
+
+document.getElementById("profile-username").textContent =
+    userData.username;
+
+document.getElementById("profile-id").textContent =
+    userData.id;
+
+// STORAGE
+
+const balanceKey = "adcoin_balance_" + userData.id;
+const historyKey = "adcoin_history_" + userData.id;
+
+function loadBalance() {
+    try {
+        return Math.max(
+            0,
+            Number(localStorage.getItem(balanceKey)) || 0
+        );
+    } catch (error) {
+        return 0;
+    }
+}
+
+function saveBalance() {
+    try {
+        localStorage.setItem(balanceKey, balance);
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+// BALANCE
+
+let balance = loadBalance();
+
+function updateBalance() {
+
+    document.getElementById("user-balance").textContent =
+        balance;
+
+    document.getElementById("total-earnings").textContent =
+        (balance * 0.005).toFixed(2);
+
+    saveBalance();
+}
+
+updateBalance();
+
+// HISTORY
+
+let history = [];
+
+try {
+    history = JSON.parse(
+        localStorage.getItem(historyKey) || "[]"
+    );
+
+    if (!Array.isArray(history)) {
+        history = [];
+    }
+
+} catch (error) {
+    history = [];
+}
+
+function renderHistory() {
+
+    const list = document.getElementById("history-list");
+
+    list.innerHTML = "";
+
+    if (history.length === 0) {
+
+        const empty = document.createElement("li");
+
+        empty.className = "empty-history";
+        empty.textContent = "No activity yet.";
+
+        list.appendChild(empty);
+
+        return;
+    }
+
+    history.slice(0, 5).forEach(item => {
+
+        const li = document.createElement("li");
+        li.className = "history-item";
+
+        const info = document.createElement("div");
+
+        const title = document.createElement("div");
+        title.className = "history-title";
+        title.textContent = item.title || "Activity";
+
+        const date = document.createElement("div");
+        date.className = "history-date";
+        date.textContent = item.date || "";
+
+        info.appendChild(title);
+        info.appendChild(date);
+
+        const amount = document.createElement("div");
+        amount.className = "history-amount";
+        amount.textContent = "+" + Number(item.amount || 0) + " 🪙";
+
+        li.appendChild(info);
+        li.appendChild(amount);
+
+        list.appendChild(li);
+
+    });
+
+}
+
+function addHistory(title, amount) {
+
+    history.unshift({
+        title: title,
+        amount: amount,
+        date: new Date().toLocaleString("en-US")
+    });
+
+    history = history.slice(0, 50);
+
+    try {
+        localStorage.setItem(
+            historyKey,
+            JSON.stringify(history)
+        );
+    } catch (error) {
+        showMessage("Could not save activity.");
+    }
+
+    renderHistory();
+}
+
+renderHistory();
+
+// WATCH ADS
+
+document.getElementById("watchBtn")
+.addEventListener("click", function() {
+
+    balance += 10;
+
+    updateBalance();
+
+    addHistory("Watched Ad", 10);
+
+    showMessage("You earned 10 Coins! 🪙");
+
+});
+
+// INVITE FRIENDS
+
+document.getElementById("shareBtn")
+.addEventListener("click", async function() {
+
+    const link =
+        "https://t.me/AdCoin_Reward_Bot?start=" +
+        userData.id;
+
+    try {
+
+        if (navigator.clipboard?.writeText) {
+
+            await navigator.clipboard.writeText(link);
+
+            showMessage("Invite link copied!");
+
+        } else {
+
+            showMessage(link);
+
         }
 
-        // 3. Balance System
-        let balance = parseInt(localStorage.getItem('adcoin_balance')) || 0;
-        document.getElementById('user-balance').innerText = balance;
+    } catch (error) {
 
-        // 4. History System
-        let history = JSON.parse(localStorage.getItem('adcoin_history')) || [];
-        
-        function renderHistory() {
-            const list = document.getElementById('history-list');
-            if (history.length === 0) {
-                list.innerHTML = '<li style="color: #666; font-size: 14px; text-align: center; padding: 10px;">No activity yet.</li>';
-                return;
-            }
-            list.innerHTML = '';
-            // Show latest 5 items
-            history.slice(0, 5).forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'history-item';
-                li.innerHTML = `
-                    <div>
-                        <div class="history-title">${item.title}</div>
-                        <div class="history-date">${item.date}</div>
-                    </div>
-                    <div class="history-amount">+${item.amount} 🪙</div>
-                `;
-                list.appendChild(li);
-            });
-        }
-        renderHistory(); // Render on load
+        showMessage(link);
 
-        // 5. Watch Ad Button Event
-        document.getElementById('watchBtn').addEventListener('click', function() {
-            balance += 10;
-            localStorage.setItem('adcoin_balance', balance);
-            document.getElementById('user-balance').innerText = balance;
-            
-            // Add to history
-            const now = new Date();
-            const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            history.unshift({ title: 'Watched Ad', amount: 10, date: dateStr });
-            localStorage.setItem('adcoin_history', JSON.stringify(history));
-            renderHistory();
+    }
 
-            tg.showAlert("You earned 10 Coins! 🪙");
-        });
+});
 
-        // 6. Share Link Button Event
-        document.getElementById('shareBtn').addEventListener('click', function() {
-            const link = "https://t.me/AdCoin_Reward_Bot?start=" + userData.id;
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(link).then(() => {
-                    tg.showAlert("Link copied!");
-                });
-            } else {
-                tg.showAlert("Link: " + link);
-            }
-        });
+// TAB SWITCHING
 
-        // 7. Tab Switching Logic
-        window.switchTab = function(tabId, element) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            element.classList.add('active');
-        };
-    </script>
+window.switchTab = function(tabId, element) {
+
+    document.querySelectorAll(".tab-content")
+    .forEach(tab => {
+        tab.classList.remove("active");
+    });
+
+    document.getElementById("tab-" + tabId)
+    .classList.add("active");
+
+    document.querySelectorAll(".nav-item")
+    .forEach(item => {
+        item.classList.remove("active");
+    });
+
+    element.classList.add("active");
+
+};
+
+</script>
+
 </body>
 </html>
